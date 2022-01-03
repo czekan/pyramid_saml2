@@ -1,0 +1,11 @@
+.vscode/
+.venv/
+.pytest_cache/
+pyramid_saml2.egg-info/
+.coverage
+__pycache__/
+/build/
+/dist/
+/doc/build/
+/doc/source/changelog.md
+/env/
