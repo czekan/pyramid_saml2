@@ -1,12 +1,13 @@
 from typing import Generic, Iterable, Optional, Tuple, TypeVar
 
+import OpenSSL.crypto
 from pyramid.request import Request
-
 
 from pyramid_saml2.exceptions import CannotHandleAssertion, UserNotAuthorized
 from pyramid_saml2.signing import Digester, RsaSha1Signer, Sha1Digester, Signer
 from pyramid_saml2.types import X509, PKey
-from pyramid_saml2.utils import certificate_to_string, import_string
+from pyramid_saml2.utils import certificate_to_string, import_string, \
+    certificate_from_string, private_key_from_string
 
 from .sphandler import SPHandler
 
@@ -84,13 +85,19 @@ class IdentityProvider:
         """Get the public certificate for this IdP.
         If this IdP does not sign its requests, returns None.
         """
-        return self.get_idp_config().get('certificate')
+        cert = self.get_idp_config().get('certificate')
+        if isinstance(cert, str):
+            return certificate_from_string(cert, format=OpenSSL.crypto.FILETYPE_PEM)
+        return cert
 
     def get_idp_private_key(self) -> Optional[PKey]:
         """Get the private key for this IdP.
         If this IdP does not sign its requests, returns None.
         """
-        return self.get_idp_config().get('private_key')
+        private_key = self.get_idp_config().get('private_key')
+        if isinstance(private_key, str):
+            return private_key_from_string(private_key, format=OpenSSL.crypto.FILETYPE_PEM)
+        return private_key
 
     def get_idp_autosubmit(self) -> bool:
         """Should the IdP autosubmit responses to the Service Provider?"""
