@@ -3,6 +3,7 @@ import os
 
 from pyramid.config import Configurator
 from pyramid.interfaces import ISessionFactory
+from pyramid_jinja2 import IJinja2Environment
 
 from pyramid_saml2.idp.views import login_begin, login_process, logout, metadata
 
@@ -52,8 +53,10 @@ def includeme(config: Configurator) -> None:
     else:
         log.setLevel(logging.INFO)
 
-    config.include('pyramid_jinja2')
-    config.add_jinja2_renderer(".html")
+    environment = config.registry.queryUtility(IJinja2Environment, name='.jinja2')
+    if environment is not None:
+        config.include('pyramid_jinja2')
+        config.add_jinja2_renderer(".jinja2")
 
     factory = config.registry.queryUtility(ISessionFactory)
     if factory is None:
@@ -61,5 +64,5 @@ def includeme(config: Configurator) -> None:
             'No session factory registered.'
             'Please register one first.'
         )
-
+    
     config.add_directive('configure_saml2_idp', configure_saml2_idp)
