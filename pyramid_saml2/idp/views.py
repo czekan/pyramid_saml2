@@ -12,7 +12,10 @@ logger = logging.getLogger(__name__)
 @view_config(route_name='pyramid_saml2_idp_login_begin', request_method='GET')
 @view_config(route_name='pyramid_saml2_idp_login_begin', request_method='POST')
 def login_begin(request):
-    request.session['SAMLRequest'] = request.params['SAMLRequest']
+    saml_request = request.params.get('SAMLRequest')
+    if not saml_request:
+        return "SAMLRequest is missing"
+    request.session['SAMLRequest'] = saml_request
     request.session['RelayState'] = request.params.get('RelayState', '')
     return HTTPFound(request.route_url('pyramid_saml2_idp_login_process'))
 
@@ -20,10 +23,15 @@ def login_begin(request):
 @view_config(
     route_name='pyramid_saml2_idp_login_process',
     request_method='GET',
-    renderer='pyramid_saml2:idp/templates/login.html')
+    renderer='pyramid_saml2:idp/templates/login.jinja2')
 def login_process(request):
     idp = request.registry['saml2_idp_cls'](request)
     idp.login_required()
+
+    if 'SAMLRequest' not in request.session:
+        return "SAMLRequest is misssing"
+    if 'RelayState' not in request.session:
+        return "RelayState is missing"
 
     saml_request = request.session['SAMLRequest']
     relay_state = request.session['RelayState']
@@ -45,7 +53,7 @@ def login_process(request):
 @view_config(
     route_name='pyramid_saml2_idp_logout',
     request_method='GET',
-    renderer='pyramid_saml2:idp/templates/logged_out.html')
+    renderer='pyramid_saml2:idp/templates/logged_out.jinja2')
 def logout(request):
     """
     Allows a non-SAML 2.0 URL to log out the user and
@@ -69,7 +77,7 @@ def logout(request):
 @view_config(
     route_name='pyramid_saml2_idp_metadata',
     request_method='GET',
-    renderer='pyramid_saml2:idp/templates/metadata.html')
+    renderer='pyramid_saml2:idp/templates/metadata.jinja2')
 def metadata(request):
     """
     Replies with the XML Metadata IDPSSODescriptor.
@@ -82,7 +90,7 @@ def metadata(request):
 @view_config(
     name='user_not_authorized',
     context='pyramid_saml2.exceptions.UserNotAuthorized',
-    renderer='pyramid_saml2:idp/templates/invalid_user.html'
+    renderer='pyramid_saml2:idp/templates/invalid_user.jinja2'
 )
 def user_not_authorized_exc_view(exception, request):
     logger.exception("User not authorized", exc_info=exception)

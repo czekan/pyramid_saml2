@@ -3,12 +3,13 @@ import datetime
 import logging
 from typing import Any, Optional
 from urllib.parse import urlparse
+import OpenSSL.crypto
 
 from pyramid_saml2 import codex
 from pyramid_saml2.exceptions import CannotHandleAssertion
 from pyramid_saml2.signing import Digester, Signer
 from pyramid_saml2.types import X509
-from pyramid_saml2.utils import get_random_id, utcnow
+from pyramid_saml2.utils import get_random_id, utcnow, certificate_from_string
 from pyramid_saml2.xml_templates import XmlTemplate
 
 from .parser import AuthnRequestParser, LogoutRequestParser
@@ -51,6 +52,8 @@ class SPHandler(object):
             self.acs_url = acs_url
 
         if certificate is not None:
+            if isinstance(certificate, str):
+                certificate = certificate_from_string(certificate, format=OpenSSL.crypto.FILETYPE_PEM)
             self.certificate = certificate
 
         if display_name:
