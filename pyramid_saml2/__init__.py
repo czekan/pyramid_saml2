@@ -54,7 +54,7 @@ def includeme(config: Configurator) -> None:
         log.setLevel(logging.INFO)
 
     environment = config.registry.queryUtility(IJinja2Environment, name='.jinja2')
-    if environment is not None:
+    if environment is None:
         config.include('pyramid_jinja2')
         config.add_jinja2_renderer(".jinja2")
 
