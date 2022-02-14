@@ -6,7 +6,7 @@ If the documents are signed, they will be verified as part of parsing.
 import logging
 from typing import Iterable, Optional
 
-import defusedxml.lxml
+import lxml
 import lxml.etree
 from signxml import XMLVerifier
 
@@ -49,7 +49,7 @@ class XmlParser:
         :raises: ValueError
         """
         try:
-            return defusedxml.lxml.fromstring(xml_string)
+            return lxml.fromstring(xml_string)
         except lxml.etree.Error:
             message = "Could not parse request XML"
             self._logger.exception(message)
