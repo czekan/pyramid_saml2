@@ -49,7 +49,7 @@ class XmlParser:
         :raises: ValueError
         """
         try:
-            return lxml.fromstring(xml_string)
+            return lxml.etree.fromstring(xml_string)
         except lxml.etree.Error:
             message = "Could not parse request XML"
             self._logger.exception(message)
