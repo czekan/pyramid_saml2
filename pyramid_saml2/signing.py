@@ -16,7 +16,6 @@ from .xml_templates import XmlTemplate
 
 logger = logging.getLogger(__name__)
 
-
 class Digester:
     """Base class for all the digest methods.
     SAML2 digest methods have an identifier in the form of a URL,
@@ -36,19 +35,16 @@ class Digester:
         >>> digester(b'Hello, world!')
         'lDpwLQbzRZmu4fjajvn3KWAx1pk='
     """
-    #: The URI identifing this digest method
+    #: The URI identifying this digest method
     uri: ClassVar[str]
 
     def __call__(self, data: bytes) -> str:
-        """Make a hex digest of some binary data.
-        """
+        """Make a base64-encoded digest of some binary data."""
         return base64.b64encode(self.make_digest(data)).decode('utf-8')
 
     def make_digest(self, data: bytes) -> bytes:
-        """Make a binary digest of some binary data using this digest method.
-        """
+        """Make a binary digest of some binary data using this digest method."""
         raise NotImplementedError
-
 
 class Sha1Digester(Digester):
     uri = 'http://www.w3.org/2000/09/xmldsig#sha1'
@@ -56,13 +52,11 @@ class Sha1Digester(Digester):
     def make_digest(self, data: bytes) -> bytes:
         return hashlib.sha1(data).digest()
 
-
 class Sha256Digester(Digester):
     uri = 'http://www.w3.org/2001/04/xmlenc#sha256'
 
     def make_digest(self, data: bytes) -> bytes:
         return hashlib.sha256(data).digest()
-
 
 class Signer:
     """
@@ -70,7 +64,7 @@ class Signer:
     constructor arguments, but each will have a uri attribute and will sign
     data when called.
 
-    Implemented signers: :class:`RsaSha1Signer`.
+    Implemented signers: :class:`RsaSha1Signer`, :class:`RsaSha256Signer`.
 
     Example:
 
@@ -79,39 +73,64 @@ class Signer:
         >>> from pyramid_saml2.signing import RsaSha1Signer
         >>> from pyramid_saml2.utils import private_key_from_file
         >>> key = private_key_from_file('tests/keys/sample/idp-private-key.pem')
-        >>> signer = RsaSha1Signer(private_key)
+        >>> signer = RsaSha1Signer(key)
         >>> signer(b'Hello, world!')
         'Yplg1oQDPLiozAWoY9ykgQ4eicojNnU+KjRrwGp67jHM5FGkQZ71Pk1Bgo631WA5B1hopQByRh/elqtEEN+vRA=='
     """
-    #: The URI identifing this signing method
+    #: The URI identifying this signing method
     uri: ClassVar[str]
 
     def __call__(self, data: bytes) -> str:
-        """Sign some binary data and return the string output."""
+        """Sign some binary data and return the base64-encoded signature."""
         raise NotImplementedError
-
 
 class RsaSha1Signer(Signer):
     uri = 'http://www.w3.org/2000/09/xmldsig#rsa-sha1'
 
     def __init__(self, key: Union[X509, PKey]):
+        """Initialize the signer with a private key.
+
+        :param key: An OpenSSL.crypto.PKey or X509 object. If an X509 certificate is provided,
+                    a ValueError is raised, as signing requires a private key.
+        """
+        if isinstance(key, OpenSSL.crypto.X509):
+            raise ValueError("X509 certificate cannot be used for signing. Provide a PKey object.")
+        elif not isinstance(key, OpenSSL.crypto.PKey):
+            raise ValueError("Key must be an OpenSSL.crypto.PKey object.")
         self.key = key
 
-    def __call__(self, data: bytes):
-        data = OpenSSL.crypto.sign(self.key, data, "sha1")
-        return base64.b64encode(data).decode('ascii')
-
+    def __call__(self, data: bytes) -> str:
+        """Sign some binary data and return the base64-encoded signature."""
+        try:
+            signature = self.key.sign(data, "sha1")
+            return base64.b64encode(signature).decode('ascii')
+        except Exception as e:
+            logger.error(f"Failed to sign data with RSA-SHA1: {e}")
+            raise
 
 class RsaSha256Signer(Signer):
     uri = 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256'
 
     def __init__(self, key: Union[X509, PKey]):
+        """Initialize the signer with a private key.
+
+        :param key: An OpenSSL.crypto.PKey or X509 object. If an X509 certificate is provided,
+                    a ValueError is raised, as signing requires a private key.
+        """
+        if isinstance(key, OpenSSL.crypto.X509):
+            raise ValueError("X509 certificate cannot be used for signing. Provide a PKey object.")
+        elif not isinstance(key, OpenSSL.crypto.PKey):
+            raise ValueError("Key must be an OpenSSL.crypto.PKey object.")
         self.key = key
 
-    def __call__(self, data: bytes):
-        data = OpenSSL.crypto.sign(self.key, data, "sha256")
-        return base64.b64encode(data).decode('ascii')
-
+    def __call__(self, data: bytes) -> str:
+        """Sign some binary data and return the base64-encoded signature."""
+        try:
+            signature = self.key.sign(data, "sha256")
+            return base64.b64encode(signature).decode('ascii')
+        except Exception as e:
+            logger.error(f"Failed to sign data with RSA-SHA256: {e}")
+            raise
 
 class SignedInfoTemplate(XmlTemplate):
     """A ``<SignedInfo>`` node, such as:
@@ -152,14 +171,14 @@ class SignedInfoTemplate(XmlTemplate):
         return self.element('Reference', attrs={
             'URI': '#' + self.params['REFERENCE_URI']
         }, children=[
-            self._get_tranforms(),
+            self._get_transforms(),
             self.element('DigestMethod', attrs={
                 'Algorithm': self.params['DIGESTER'].uri,
             }),
             self.element('DigestValue', text=self.params['SUBJECT_DIGEST'])
         ])
 
-    def _get_tranforms(self):
+    def _get_transforms(self):
         return self.element('Transforms', children=[
             self.element('Transform', attrs={
                 'Algorithm': 'http://www.w3.org/2000/09/xmldsig#enveloped-signature'
@@ -168,7 +187,6 @@ class SignedInfoTemplate(XmlTemplate):
                 'Algorithm': 'http://www.w3.org/2001/10/xml-exc-c14n#'
             }),
         ])
-
 
 class SignatureTemplate(XmlTemplate):
     """
@@ -202,7 +220,7 @@ class SignatureTemplate(XmlTemplate):
         :param subject: The string to sign.
             This is usually the canonical string representation
             of the XML node this ``<Signature>`` verifies.
-        :param certificate: The certificate to sign the data with
+        :param certificate: The certificate to include in the KeyInfo section
         :param digester: The algorithm used to make the digest
         :param signer: The algorithm used to sign the data
         :param reference_uri: The ID of the element that is signed
@@ -250,11 +268,10 @@ class SignatureTemplate(XmlTemplate):
             ])
         ])
 
-
 class SignableTemplate(XmlTemplate):
     """
     An :class:`XmlTemplate` that supports being signed,
-    by adding an :class:`\\<Signauture\\> <SignatureTemplate>` element.
+    by adding an :class:`<Signature> <SignatureTemplate>` element.
     """
     #: The element index where the signature should be inserted
     signature_index = 1
@@ -271,16 +288,15 @@ class SignableTemplate(XmlTemplate):
         signer: Signer,
     ) -> XmlNode:
         """Cryptographically sign this template by inserting a
-        :class:`\\<Signature\\> <SignatureTemplate>` element.
+        :class:`<Signature> <SignatureTemplate>` element.
 
-        The ID of the node to sign is fetched from :meth:`get_id`.
-
-        :param certificate: The certificate to sign the data with
+        :param certificate: The certificate to include in the KeyInfo section
         :param digester: The algorithm used to make the digest
         :param signer: The algorithm used to sign the data
         """
         signature = self.make_signature(certificate, digester, signer)
         self.add_signature(signature)
+        return self.xml
 
     def make_signature(
         self,
@@ -295,7 +311,7 @@ class SignableTemplate(XmlTemplate):
         return SignatureTemplate.sign(subject, certificate, digester, signer, self.get_id())
 
     def add_signature(self, signature: SignatureTemplate):
-        """Insert a :class:`\\<Signature\\> <SignatureTemplate>` into this node.
+        """Insert a :class:`<Signature> <SignatureTemplate>` into this node.
         """
         self.xml.insert(self.signature_index, signature.xml)
 
@@ -304,7 +320,6 @@ class SignableTemplate(XmlTemplate):
         By default, grabs the ID from the parameter named in :attr:`id_parameter`.
         """
         return self.params[self.id_parameter]
-
 
 def sign_query_parameters(
     signer: Signer,
@@ -327,6 +342,7 @@ def sign_query_parameters(
 
     # Sign the encoded query string
     data = urlencode(bits, encoding='utf-8').encode('utf-8')
-    bits.append(('Signature', signer(data)))
+    signature = signer(data)
+    bits.append(('Signature', signature))
 
     return urlencode(bits, encoding='utf-8')
