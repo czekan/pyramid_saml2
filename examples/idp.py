@@ -126,8 +126,8 @@ class LoginView:
         next = self.request.params['next']
 
         self.request.session['user'] = user
-        logging.info("Logged user", user, "in")
-        logging.info("Redirecting to", next)
+        logging.info("Logged user %s in", user)
+        logging.info("Redirecting to %s", next)
 
         return HTTPFound(next)
 

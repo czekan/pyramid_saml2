@@ -41,6 +41,8 @@ class XmlParser:
         self.xml_string = xml_string
         self.xml_tree = self.parse_request(xml_string)
         if self.is_signed():
+            if self.certificate is None:
+                raise ValueError("Received a signed SAML request but no certificate is configured to verify it")
             self.xml_tree = self.parse_signed(self.xml_tree, self.certificate)
 
     def parse_request(self, xml_string) -> None:

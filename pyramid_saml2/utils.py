@@ -52,10 +52,10 @@ class cached_property(property):
         return value
 
     def __set__(self, instance, value):
-        raise AttributeError(f"Can not set read-only attribute {type(instance).__name__}.{self.name}")
+        raise AttributeError(f"Can not set read-only attribute {type(instance).__name__}.{self.__name__}")
 
     def __delete__(self, instance):
-        raise AttributeError(f"Can not delete read-only attribute {type(instance).__name__}.{self.name}")
+        raise AttributeError(f"Can not delete read-only attribute {type(instance).__name__}.{self.__name__}")
 
 
 def import_string(path: str) -> T.Any:

@@ -29,7 +29,7 @@ def login_process(request):
     idp.login_required()
 
     if 'SAMLRequest' not in request.session:
-        return "SAMLRequest is misssing"
+        return "SAMLRequest is missing"
     if 'RelayState' not in request.session:
         return "RelayState is missing"
 
@@ -71,7 +71,7 @@ def logout(request):
         if redirect_url and idp.is_valid_redirect(redirect_url):
             return HTTPFound(location=redirect_url)
 
-    return {"idp": idp, **context}
+    return {"idp": idp}
 
 
 @view_config(

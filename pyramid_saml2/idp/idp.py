@@ -205,9 +205,10 @@ class IdentityProvider:
         """Get any extra context for the metadata template.
         Suggested extra context variables include 'org' and 'contacts'.
         """
+        cert = self.get_idp_certificate()
         return {
             'entity_id': self.get_idp_entity_id(),
-            'certificate': certificate_to_string(self.get_idp_certificate()),
+            'certificate': certificate_to_string(cert) if cert is not None else '',
             'slo_url': self.get_slo_url(),
             'sso_url': self.get_sso_url(),
             'org': None,
