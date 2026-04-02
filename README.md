@@ -1,5 +1,7 @@
 # pyramid-saml2
 
+[![Tests](https://github.com/czekan/pyramid_saml2/actions/workflows/tests.yml/badge.svg)](https://github.com/czekan/pyramid_saml2/actions/workflows/tests.yml)
+
 A Pyramid extension for creating SAML 2.0 Identity Providers.
 
 ## Requirements
