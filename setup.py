@@ -22,7 +22,7 @@ with open(os.path.join(here, 'CHANGELOG.md')) as f:
 
 setup(
     name='pyramid_saml2',
-    version='0.1',
+    version='0.2',
     description='Pyramid SAML IdP',
     long_description=long_description,
     long_description_content_type='text/markdown',

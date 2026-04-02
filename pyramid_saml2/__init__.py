@@ -7,7 +7,7 @@ from pyramid_jinja2 import IJinja2Environment
 
 from pyramid_saml2.idp.views import login_begin, login_process, logout, metadata
 
-__VERSION__ = '0.1'
+__VERSION__ = '0.2'
 
 
 log = logging.getLogger('pyramid_saml2')
