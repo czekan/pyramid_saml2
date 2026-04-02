@@ -11,7 +11,21 @@ A Pyramid extension for creating SAML 2.0 Identity Providers.
 ## Installation
 
 ```bash
-pip install pyramid_saml2
+pip install -U git+https://github.com/czekan/pyramid_saml2.git
+```
+
+Or clone and install locally:
+
+```bash
+git clone https://github.com/czekan/pyramid_saml2.git
+cd pyramid_saml2
+pip install .
+```
+
+For development (editable install):
+
+```bash
+pip install -e .
 ```
 
 ## Quick Start
