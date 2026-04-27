@@ -22,7 +22,7 @@ with open(os.path.join(here, 'CHANGELOG.md')) as f:
 
 setup(
     name='pyramid_saml2',
-    version='0.2',
+    version='0.2.1',
     description='Pyramid SAML IdP',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -42,5 +42,6 @@ setup(
     keywords='web pyramid saml2 idp',
     install_requires=requires,
     packages=find_packages(exclude=['demo', 'test*']),
-    include_package_data=True
+    include_package_data=True,
+    package_data={'pyramid_saml2': ['idp/templates/*.jinja2']},
 )

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1 (2026-04-27)
+
+### Fixed
+- Jinja2 templates missing from installed package; added `MANIFEST.in` and `package_data` so `idp/templates/*.jinja2` ship with sdist and wheel
+
 ## 0.2 (2026-04-02)
 
 ### Added
