@@ -81,7 +81,8 @@ class TestUtcnow:
 
     def test_returns_utc(self):
         now = utcnow()
-        assert now.tzinfo.zone == 'UTC'
+        import datetime
+        assert now.tzinfo == datetime.timezone.utc
 
 
 class TestImportString:

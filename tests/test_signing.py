@@ -1,7 +1,6 @@
 import base64
 from pathlib import Path
 
-import OpenSSL.crypto
 import pytest
 
 from pyramid_saml2.signing import (
@@ -15,13 +14,6 @@ from pyramid_saml2.utils import private_key_from_file
 
 
 KEY_DIR = Path(__file__).parent / 'keys' / 'sample'
-
-has_openssl_sign = hasattr(OpenSSL.crypto, 'sign')
-skip_no_openssl_sign = pytest.mark.skipif(
-    not has_openssl_sign,
-    reason="OpenSSL.crypto.sign removed in newer pyopenssl"
-)
-
 
 class TestDigesters:
     def test_sha1_produces_digest(self):
@@ -54,7 +46,6 @@ class TestDigesters:
         assert 'sha256' in Sha256Digester.uri
 
 
-@skip_no_openssl_sign
 class TestSigners:
     @pytest.fixture
     def private_key(self):
@@ -83,7 +74,6 @@ class TestSigners:
         assert 'rsa-sha256' in RsaSha256Signer.uri
 
 
-@skip_no_openssl_sign
 class TestSignQueryParameters:
     def test_signs_parameters(self):
         key = private_key_from_file(KEY_DIR / 'idp-private-key.pem')

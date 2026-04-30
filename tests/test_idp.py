@@ -1,4 +1,3 @@
-import OpenSSL.crypto
 import pytest
 from pyramid import testing
 
@@ -15,7 +14,7 @@ from tests.conftest import (
 )
 
 
-class SampleIdentityProviderConfig:
+class TestSampleIdentityProviderConfig:
     def test_get_idp_config(self, idp, settings):
         config = idp.get_idp_config()
         assert config['autosubmit'] is True
@@ -55,7 +54,7 @@ class SampleIdentityProviderConfig:
         assert idp.get_idp_autosubmit() is False
 
 
-class SampleIdentityProviderAuth:
+class TestSampleIdentityProviderAuth:
     def test_is_user_logged_in_false(self, idp):
         assert idp.is_user_logged_in() is False
 
@@ -76,7 +75,7 @@ class SampleIdentityProviderAuth:
         assert user.email == 'test@example.com'
 
 
-class SampleIdentityProviderSPHandlers:
+class TestSampleIdentityProviderSPHandlers:
     def test_get_sp_handlers(self, idp):
         handlers = list(idp.get_sp_handlers())
         assert len(handlers) == 1
@@ -91,7 +90,7 @@ class SampleIdentityProviderSPHandlers:
         assert sps[0]['CLASS'] == 'tests.conftest.SampleSPHandler'
 
 
-class SampleIdentityProviderMetadata:
+class TestSampleIdentityProviderMetadata:
     def test_get_metadata_context(self, idp):
         # Need routes for metadata URL generation
         pass
@@ -107,7 +106,7 @@ class SampleIdentityProviderMetadata:
         assert ctx['certificate'] == ''
 
 
-class SampleIdentityProviderRedirect:
+class TestSampleIdentityProviderRedirect:
     def test_is_valid_redirect_true(self, idp):
         assert idp.is_valid_redirect('http://sp.example.com/dashboard') is True
 
@@ -118,7 +117,7 @@ class SampleIdentityProviderRedirect:
         assert idp.is_valid_redirect('ftp://sp.example.com/file') is False
 
 
-class SampleSPHandlerInit:
+class TestSampleSPHandlerInit:
     def test_basic_init(self, sp_handler):
         assert sp_handler.entity_id == SP_ENTITY_ID
         assert sp_handler.acs_url == SP_ACS_URL
@@ -133,7 +132,7 @@ class SampleSPHandlerInit:
         assert str(handler) == SP_ENTITY_ID
 
 
-class SampleSPHandlerValidation:
+class TestSampleSPHandlerValidation:
     def test_validate_entity_id_match(self, sp_handler, authn_request_xml):
         xml = authn_request_xml(entity_id=SP_ENTITY_ID)
         request = sp_handler.parse_authn_request(
@@ -165,7 +164,7 @@ class SampleSPHandlerValidation:
         assert sp_handler.is_valid_redirect('http://evil.com/phish') is False
 
 
-class SampleSPHandlerResponse:
+class TestSampleSPHandlerResponse:
     def test_build_assertion(self, sp_handler, authn_request_xml):
         import datetime
         xml = authn_request_xml()
@@ -192,10 +191,6 @@ class SampleSPHandlerResponse:
         assert response['IN_RESPONSE_TO'] == '_test_request_id'
         assert response['ACS_URL'] == SP_ACS_URL
 
-    @pytest.mark.skipif(
-        not hasattr(OpenSSL.crypto, 'sign'),
-        reason="OpenSSL.crypto.sign removed in newer pyopenssl"
-    )
     def test_make_response(self, sp_handler, authn_request_xml):
         xml = authn_request_xml(destination='http://example.com/saml/login/')
         request = sp_handler.parse_authn_request(

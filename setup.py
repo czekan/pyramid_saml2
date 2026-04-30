@@ -7,8 +7,8 @@ requires = [
     'attrs>=18.1.0',
     'signxml>=2.4.0',
     'lxml>=3.8.0',
+    'cryptography',
     'pyopenssl',
-    'pytz>=0',
     'pyramid_jinja2',
 ]
 
