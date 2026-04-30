@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyramid_saml2"
+version = "0.2.1"
+description = "Pyramid SAML IdP"
+dynamic = ["readme"]
+authors = [
+    { name = "Tomasz Czekanski" }
+]
+classifiers = [
+    "License :: OSI Approved :: BSD License",
+    "Development Status :: 5 - Production/Stable",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Framework :: Pyramid",
+    "Topic :: Internet :: WWW/HTTP"
+]
+keywords = ["web", "pyramid", "saml2", "idp"]
+dependencies = [
+    "pyramid",
+    "attrs>=18.1.0",
+    "signxml>=2.4.0",
+    "lxml>=3.8.0",
+    "cryptography",
+    "pyopenssl",
+    "pyramid_jinja2"
+]
+
+[project.urls]
+Homepage = "https://github.com/czekan/pyramid_saml2"
+
+[tool.setuptools.dynamic]
+readme = {file = ["README.md", "CHANGELOG.md"], content-type = "text/markdown"}
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+exclude = ["demo", "test*"]
+
+[tool.setuptools.package-data]
+pyramid_saml2 = ["idp/templates/*.jinja2"]
